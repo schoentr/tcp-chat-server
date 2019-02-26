@@ -3,7 +3,7 @@ import socket
 from threading import Thread
 import sys
 
-PORT = 9877
+PORT = 9878
 
 class ChatServer(Thread):
 
@@ -37,12 +37,44 @@ class ChatServer(Thread):
                 [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
                 self.client_pool = [c for c in self.client_pool if c.id != id] 
                 conn.close()
+
+            elif data[0] =='@list':
+                for i in self.client_pool:
+                    name = i.nick
+                    reply = name.encode() + b' '
+                    conn.sendall(reply)    
+
+            elif data[0] == '@nickname':
+                nickname = data[1].strip()
+                for i in self.client_pool:
+                    if i.id == id:
+                        i.nick = nickname
+
+            elif data[0]  == '@dm':
+                send_to_this_user = data[1]
+                message = ''
+                arr_for_message = send_to_this_user.split(' ')
+                send_to_name = arr_for_message[0]
+                # print(send_to_name)
+
+                for x in range(1, len(arr_for_message)):
+                    message += arr_for_message[x]+ ' '
+                print(message)
+                for i in self.client_pool:
+                    print('nick', send_to_name, i.nick)
+                    if i.nick == send_to_name:
+                        print('hit yo')
+                    else:
+                        print('try this')    
+
             else:
                 conn.sendall(b'Invalid command. Try again.\n')
         else: 
-            reply = nick.encode() + b': ' + message
-            [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
-    
+            for i in self.client_pool:
+                if i.id == id:
+                    reply = i.nick.encode() + b': ' + message
+                    [c.conn.sendall(reply) for c in self.client_pool if len(self.client_pool)]
+
     def run_thread(self, id, nick, conn, addr):
         print('{} connected with {} : {}'.format(nick, addr[0], str(addr[1])))
         try:
