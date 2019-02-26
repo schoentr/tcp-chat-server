@@ -3,7 +3,7 @@ import socket
 from threading import Thread
 import sys
 
-PORT = 9876
+PORT = 9877
 
 class ChatServer(Thread):
 
@@ -68,7 +68,7 @@ class ChatServer(Thread):
         self.server.close()
 
 if __name__ == '__main__':
-    server = ChatServer(PORT)
+    server = ChatServer(PORT,socket.gethostname())
     try:
         server.run()
     except KeyboardInterrupt:
